@@ -1,7 +1,6 @@
 import json
 from textwrap import dedent
 from flask import Flask, request, render_template_string, session, redirect, url_for
-from openai import AzureOpenAI
 import os
 from langchain_openai import AzureChatOpenAI
 from langchain.tools import DuckDuckGoSearchRun
@@ -38,11 +37,7 @@ app.config['SECRET_KEY'] = 'your-secret-key'  # Replace with your secret key
 azure_openai_endpoint = os.getenv('OPENAI_AZURE_ENDPOINT', "")
 azure_openai_api_key = os.getenv('OPENAI_API_KEY', '')
 azure_openai_deployment_id = 'gpt4o'
-client = AzureOpenAI(
-    azure_endpoint=azure_openai_endpoint,
-    api_version="2023-07-01-preview",
-    api_key=azure_openai_api_key
-)
+
 default_llm = AzureChatOpenAI(
     openai_api_version="2023-07-01-preview",
     azure_deployment=azure_openai_deployment_id,
