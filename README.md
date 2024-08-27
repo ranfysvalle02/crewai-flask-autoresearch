@@ -9,7 +9,7 @@ Consider, for example, an AI agent designed to recommend job candidates. If the 
 
 ## AI Research Assistant - Evaluating Company Potential
 
-![output](output.png]
+![output](output.png)
 
 **Key Features**
 
