@@ -3,11 +3,73 @@ from textwrap import dedent
 from flask import Flask, request, render_template_string, session, redirect, url_for
 import os
 from langchain_openai import AzureChatOpenAI
-from langchain.tools import DuckDuckGoSearchRun
 from crewai import Crew, Task, Agent
-from langchain_community.tools import DuckDuckGoSearchResults
+from crewai_tools import BaseTool
+from duckduckgo_search import DDGS
+from youtube_transcript_api import YouTubeTranscriptApi
 
-search_tool = DuckDuckGoSearchResults()
+# Azure OpenAI configuration
+azure_openai_endpoint = os.getenv('OPENAI_AZURE_ENDPOINT', "")
+azure_openai_api_key = os.getenv('OPENAI_API_KEY', '')
+azure_openai_deployment_id = os.getenv('OPENAI_MODEL_NAME','gpt-35-turbo')
+
+default_llm = AzureChatOpenAI(
+    openai_api_version="2023-07-01-preview",
+    azure_deployment=azure_openai_deployment_id,
+    azure_endpoint=azure_openai_endpoint,
+    api_key=azure_openai_api_key,
+    model_name="gpt-3.5-turbo"
+)
+def extract_youtube_id_from_href(href_url):
+    # Split the URL on the '=' character
+    url_parts = href_url.split('=')
+    # The video ID is the part after 'v', which is the last part of the URL
+    video_id = url_parts[-1]
+    return video_id
+def get_transcript(video_id):
+  """Fetches the transcript for a given YouTube video ID.
+  Args:
+    video_id: The ID of the YouTube video.
+  Returns:
+    A list of transcript segments, or None if no transcript is found.
+  """
+
+  try:
+    transcript = YouTubeTranscriptApi.get_transcript(video_id)
+    alltext = (' '.join(item['text'] for item in transcript))
+    return alltext
+  except Exception as e:
+    print(f"Error fetching transcript for {video_id}: {e}")
+    return None
+class WebSearch(BaseTool):
+    name: str = "Web Search"  # Add type annotation for 'name'
+    description: str = "Searches YouTube for critical. Use YouTube search best practices."
+    def _run(self, query: str) -> str:
+        query = query + " site:youtube.com"
+        results = DDGS().text(str(query),region="us-en", max_results=1)
+        VIDEO_IDS = []
+        video_transcript_text = ""
+        for result in results:
+            VIDEO_IDS.append(result["href"])
+            video_transcript_text = get_transcript(extract_youtube_id_from_href(result["href"]))
+        print(VIDEO_IDS)
+        messages = [
+            (
+                "system",
+                "You are a helpful assistant that summarizes video transcripts into detailed markdown with key facts in list format.",
+            ),
+            ("human", "What are some key facts about the following content:\n\n" + video_transcript_text),
+            ("human", """
+             [response format]
+                - MUST BE VALID MARKDOWN LIST FORMAT
+                - MUST BE VALID MARKDOWN STRING
+             [end response format]
+             """),
+        ]
+        ai_msg = default_llm.invoke(messages)
+        return f"Search results for: {query}: \n\n\"{ai_msg.content.strip()}\":"
+    
+search_tool = WebSearch()
 # target to compare user input to
 target = "MongoDB"
 target_context = """
@@ -32,19 +94,6 @@ As a document database, MongoDB makes it easy for developers to store structured
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'  # Replace with your secret key
 
-# Azure OpenAI configuration
-azure_openai_endpoint = os.getenv('OPENAI_AZURE_ENDPOINT', "")
-azure_openai_api_key = os.getenv('OPENAI_API_KEY', '')
-azure_openai_deployment_id = os.getenv('OPENAI_MODEL_NAME','gpt-4')
-
-default_llm = AzureChatOpenAI(
-    openai_api_version="2023-07-01-preview",
-    azure_deployment=azure_openai_deployment_id,
-    azure_endpoint=azure_openai_endpoint,
-    api_key=azure_openai_api_key,
-    model_name=azure_openai_deployment_id
-)
-
 
 class CustomCrew:
     def __init__(self, company_name):
@@ -54,42 +103,44 @@ class CustomCrew:
        # Define agent with a more specific role and backstory
         custom_agent_1 = Agent(
             role="Partner Compatibility Analyst",
-            backstory="I am an expert in assessing the suitability of potential business partners. I have a deep understanding of industry trends, financial analysis, and partnership dynamics.",
-            goal=f"Using the snippets provided from your web search tool, generate an HTML report on {self.company_name} for potential partnership opportunities with {target}, focusing on financial stability, industry reputation, and alignment with strategic goals.",
+            backstory="I am an expert in assessing the suitability of potential business partners.",
+            goal=f"Research the {self.company_name}, its products, and its latest news to determine compatibility as PARTNER.",
             tools=[search_tool],
             allow_delegation=False,
             verbose=True,
             llm=default_llm,
             memory=True, # Enable memory
-            max_iter=50, # Default value for maximum iterations
+            cache=True
         )
 
         # Generate a more relevant search query using keyword extraction or semantic search
 
         custom_task_1 = Task(
             description=dedent(
-                f"""
-                Perform a 3-5 web searches using your web search tool to analyze {self.company_name}:                
-                    Use your tools and provide a recommendation on partner compatibility.
-                    Answer to the best of your ability.
-                    IMPORTANT! Your output should follow the provided template.
-                    Be concise in your recommendation.
-                    MAX RESPONSE LENGTH IS 500 CHARACTERS.
-                    IMPORTANT! PERFORM AT LEAST 3-5 WEB SEARCHES.
-                    MAX. 5 WEB SEARCHES.
-                    CREATE AN HTML STRING USING THE PROVIDED TEMPLATE! IMPORTANT!
-                    THINK CRITICALLY AND STEP BY STEP!
-
-            """+"\n\n[additional context]"+target_context+"\n\n[end additional context]"
+                "\n\n[additional context]"+target_context+"\n\n[end additional context]"+"\n\n"+
+                f"""          
+[task]
+    Use the research on your web search to create a concise HTML report with structured data and a clear recommendation.
+    Search the web researching {self.company_name}, and generate a concise HTML response.
+    
+[IMPORTANT]
+- ALWAYS TRY TO ANSWER THE QUESTION IN A CLEAR AND CONCISE MANNER.
+- Each search query must be semantically diverse yet effective.
+- KEEP YOUR RESPONSE TO 600 CHARACTERS! IMPORTANT!
+- ALWAYS TRY TO ANSWER THE QUESTION IN A CLEAR AND CONCISE MANNER.
+- DO NOT OVERUSE YOUR TOOLS! MAX TOOL USE = 5. MIN TOOL USE = 3.
+- EVERY SEARCH MUST BE DIVERSE AND SEMANTICALLY DIFFERENT TO ADD MAXIMUM VALUE TO THE CONTEXT!
+"""
             ),
             agent=custom_agent_1,
             expected_output="""
 concise HTML report with structured data and a clear recommendation. 
 The HTML string will be injected into a `<div>`       
 
+IMPORTANT! FOLLOW THE TEMPLATE STRUCTURE BELOW:
 [template]
 <h2>{self.company_name} - {target} [🔴 | 🟡 | 🟢]</h2>
-<p>[conclusion goes here]</p>
+<p>...</p>
 <table>
 <tbody>
     <tr>
@@ -128,6 +179,7 @@ The HTML string will be injected into a `<div>`
 - USE EMOJIS! For High, Medium, and Low, use emojis not words.
 - High = 🔴, Medium = 🟡, Low = 🟢. DO NOT USE WORDS!
 - YOUR HTML MUST USE BOOTSTRAP CSS.
+- MAX RESPONSE LENGTH = 600 CHARACTERS.
 - DO NOT INCLUDE <html> or <body> or things like that, just the raw HTML string that can be injected into a <div>
 [end response criteria]
 
@@ -178,14 +230,13 @@ The HTML string will be injected into a `<div>`
 
         # Run the crew and format output for HTML
         result = crew.kickoff()
-
         # Extract relevant information from CrewAI output (modify as needed)
         html_output = result  # Assuming findings are in the first agent's output
-
+        html_output += "\n"+"<hr />"+"<code>" + str(crew.usage_metrics) + "</code>"
         return html_output
 
 
-@app.route('/demo', methods=['GET', 'POST'])
+@app.route('/innovapi/demo', methods=['GET', 'POST'])
 def test_endpoint():
     user_input = ''
     ai_response = ''
