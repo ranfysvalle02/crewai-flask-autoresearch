@@ -1,13 +1,26 @@
 # AI Research Assistant
+![](https://media.beehiiv.com/cdn-cgi/image/fit=scale-down,format=auto,onerror=redirect,quality=80/uploads/asset/file/90b64e83-4302-4b6d-9f79-63c40851dc3b/image.png?t=1717410721)
 
-This is a Flask application that uses Azure OpenAI to perform research on a company and generate a report on its potential for partnership opportunities. The application uses the DuckDuckGo search engine to gather information about the company and then uses Azure OpenAI to analyze the data and generate a report. The report includes information on the company's reputation, financial stability, compliance, strategic goals, and innovation.
+## The Unpredictable Mind of AI Agents: Controlling the Chaos
 
-## Features
+One of the most significant challenges in LLM-powered agents is the unpredictability of their planning processes. While these agents can generate impressive outputs, their internal reasoning is often opaque, making it difficult to understand how they arrived at their conclusions. This lack of transparency not only hinders comprehension but also makes it challenging to control the agent's behavior.
 
-- Flask application with a single endpoint `/demo` that accepts both `GET` and `POST` requests.
-- Uses Azure OpenAI for data analysis and report generation.
-- Uses DuckDuckGo search engine to gather information about the company.
-- Generates a report in HTML format that can be injected into a `<div>`.
+### The Black Box of AI Reasoning
+* **Complex Internal Mechanisms:** LLMs are incredibly complex systems with billions of parameters. Their reasoning process involves intricate interactions between these parameters, making it difficult to trace the exact steps that led to a given output.
+* **Data-Driven Nature:** LLMs are trained on massive datasets, and their responses are influenced by the patterns and correlations they have learned from this data. This can make it challenging to predict how they will respond to new or unusual prompts.
+* **Randomness:** LLMs often incorporate elements of randomness into their decision-making processes. This can introduce variability into their outputs, even for the same prompt.
+
+### The Implications of Uncontrolled Behavior
+This unpredictability can have significant implications for the use of LLM-powered automations. It can make it difficult to:
+* **Debug Errors:** When an agent produces an incorrect or unexpected result, it can be challenging to determine the root cause.
+* **Ensure Reliability:** It can be difficult to guarantee that an agent will consistently produce accurate and reliable outputs.
+* **Understand Limitations:** It can be challenging to identify the limitations of an agent and determine when it is not suitable for a particular task.
+
+### Addressing the Challenge
+While it may not be possible to completely eliminate the unpredictability of LLM-powered agents, there are steps that can be taken to mitigate its effects. These include:
+* **Rigorous Testing:** Thoroughly testing agents in a variety of scenarios can help to identify potential issues and improve their reliability.
+* **Human Oversight:** Incorporating human oversight can help to ensure that agents are used appropriately and that their outputs are reviewed for accuracy.
+* **Transparency Efforts:** Researchers are actively working on developing techniques to make the reasoning processes of LLMs more transparent.
 
 ## Beyond the Hype: Understanding the Limitations of LLMs
 
@@ -51,6 +64,9 @@ An LLM (Large Language Model) can encounter several challenges when filling out 
 
 
 ## Getting Started
+This is a Flask application that uses Azure OpenAI to perform research on a company and generate a report on its potential for partnership opportunities. The application uses the DuckDuckGo search engine to gather information about the company and then uses Azure OpenAI to analyze the data and generate a report. The report includes information on the company's reputation, financial stability, compliance, strategic goals, and innovation.
+
+Let's begin!
 
 1. Clone the repository.
 2. Install the required packages using pip
