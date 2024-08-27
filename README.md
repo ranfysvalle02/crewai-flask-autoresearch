@@ -16,7 +16,6 @@ Consider, for example, an AI agent designed to recommend job candidates. If the 
 * **Automated Company Search:** Effortlessly find company information across the web.
 * **YouTube Transcript Summarization:** Extract key points from relevant YouTube videos, saving you valuable time.
 * **HTML Report Generation:** Receive a visually appealing report summarizing the company's suitability for partnership.
-* **Standalone Flask App:** Enjoy a user-friendly interface for seamless interaction on any device.
 
 **Benefits:**
 
