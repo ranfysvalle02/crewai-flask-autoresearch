@@ -1,7 +1,7 @@
 # AI Research Assistant
 ![](https://media.beehiiv.com/cdn-cgi/image/fit=scale-down,format=auto,onerror=redirect,quality=80/uploads/asset/file/90b64e83-4302-4b6d-9f79-63c40851dc3b/image.png?t=1717410721)
 
-## The Unpredictable Mind of AI Agents: Controlling the Chaos
+## The Unpredictable Mind of AI Agents
 
 One of the most significant challenges in LLM-powered agents is the unpredictability of their planning processes. While these agents can generate impressive outputs, their internal reasoning is often opaque, making it difficult to understand how they arrived at their conclusions. This lack of transparency makes it challenging to understand and control the agent's behavior.
 
@@ -38,7 +38,6 @@ It's essential to understand that LLMs are fundamentally mathematical models. Th
 
 * **Lack of Understanding:** LLMs do not truly understand the meaning of the words they generate. They simply manipulate symbols based on statistical probabilities.
 * **Dependence on Training Data:** The quality and quantity of the training data are crucial factors in determining an LLM's performance. A model trained on limited or biased data will have limitations.
-* **Limited Contextual Understanding:** LLMs often struggle to maintain context over long conversations or to understand nuances in language.
 
 ## Potential Problems for an LLM Filling Out a Template with Color-Coded Ratings
 
@@ -68,6 +67,14 @@ Let's begin!
 
 1. Clone the repository.
 2. Install the required packages using pip
+
+
+## Configuration
+
+The application requires the following environment variables:
+
+- `OPENAI_AZURE_ENDPOINT`: The endpoint for the Azure OpenAI API.
+- `OPENAI_AZURE_API_KEY`: The API key for the Azure OpenAI API.
 
 ## Crew Code
 
@@ -153,9 +160,3 @@ python app.py
 3. Enter the name of the company you want to research and click "Start Research".
 4. The application will perform the research and display the report in the browser.
 
-## Configuration
-
-The application requires the following environment variables:
-
-- `OPENAI_AZURE_ENDPOINT`: The endpoint for the Azure OpenAI API.
-- `OPENAI_AZURE_API_KEY`: The API key for the Azure OpenAI API.
