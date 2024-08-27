@@ -33,8 +33,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'  # Replace with your secret key
 
 # Azure OpenAI configuration
-azure_openai_endpoint = os.getenv('NOSTRA_OPENAI_AZURE_ENDPOINT', "")
-azure_openai_api_key = os.getenv('NOSTRA_OPENAI_API_KEY', '')
+azure_openai_endpoint = os.getenv('OPENAI_AZURE_ENDPOINT', "")
+azure_openai_api_key = os.getenv('OPENAI_API_KEY', '')
 azure_openai_deployment_id = os.getenv('OPENAI_MODEL_NAME','gpt-4')
 
 default_llm = AzureChatOpenAI(
