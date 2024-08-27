@@ -31,7 +31,7 @@ It's essential to understand that LLMs are fundamentally mathematical models. Th
 
 ## Potential Problems for an LLM Filling Out a Template with Color-Coded Ratings
 
-An LLM (Large Language Model) can encounter several challenges when filling out a template with color-coded ratings (High = 🔴, Medium = 🟡, Low = 🟢). These challenges arise due to the nuances of natural language understanding, knowledge representation, and task-specific requirements.
+An LLM (Large Language Model) can encounter several challenges when filling out a template with color-coded ratings (🔴, 🟡, 🟢). These challenges arise due to the nuances of natural language understanding, knowledge representation, and task-specific requirements.
 
 ### 1. **Subjectivity and Contextual Understanding:**
 * **Ambiguity in Ratings:** The terms "High," "Medium," and "Low" can be subjective and depend on the context. For example, a "High" risk for a small business might be a "Low" risk for a multinational corporation.
