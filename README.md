@@ -55,6 +55,78 @@ An LLM (Large Language Model) can encounter several challenges when filling out 
 1. Clone the repository.
 2. Install the required packages using pip
 
+## Crew Code
+
+```python
+class CustomCrew:
+    def __init__(self, company_name):
+        self.company_name = company_name
+
+    def run(self):
+       # Define agent with a more specific role and backstory
+        custom_agent_1 = Agent(
+            role="Partner Compatibility Analyst",
+            backstory="I am an expert in assessing the suitability of potential business partners. I have a deep understanding of industry trends, financial analysis, and partnership dynamics.",
+            goal=f"Using the snippets provided from your web search tool, generate an HTML report on {self.company_name} for potential partnership opportunities with {target}, focusing on financial stability, industry reputation, and alignment with strategic goals.",
+            tools=[search_tool],
+            allow_delegation=False,
+            verbose=True,
+            llm=default_llm,
+            memory=True, # Enable memory
+            max_iter=50, # Default value for maximum iterations
+        )
+        custom_task_1 = Task(
+            description=dedent(
+                f"""
+                Perform a 3-5 web searches using your web search tool to analyze {self.company_name}:                
+                    Use your tools and provide a recommendation on partner compatibility.
+                    Answer to the best of your ability.
+                    IMPORTANT! Your output should follow the provided template.
+                    Be concise in your recommendation.
+                    MAX RESPONSE LENGTH IS 500 CHARACTERS.
+                    IMPORTANT! PERFORM AT LEAST 3-5 WEB SEARCHES.
+                    MAX. 5 WEB SEARCHES.
+                    CREATE AN HTML STRING USING THE PROVIDED TEMPLATE! IMPORTANT!
+                    THINK CRITICALLY AND STEP BY STEP!
+
+            """+"\n\n[additional context]"+target_context+"\n\n[end additional context]"
+            ),
+            agent=custom_agent_1,
+            expected_output=""" <expected-output> """,
+        )
+
+
+        # Define crew with updated agents and tasks
+        crew = Crew(
+            agents=[custom_agent_1],
+            tasks=[custom_task_1],
+            verbose=True,
+        )
+
+        # Run the crew and format output for HTML
+        result = crew.kickoff()
+
+        # Extract relevant information from CrewAI output (modify as needed)
+        html_output = result  # Assuming findings are in the first agent's output
+
+        return html_output
+
+
+@app.route('/demo', methods=['GET', 'POST'])
+def test_endpoint():
+    user_input = ''
+    ai_response = ''
+    if request.method == 'POST':
+        if 'reset' in request.form:
+            session['reset'] = True
+            return redirect(url_for('test_endpoint'))
+        else:
+            user_input = request.form.get('user-input')
+            custom_crew = CustomCrew(user_input)
+            result = custom_crew.run()
+            
+```
+
 ## Usage
 
 1. Run the Flask application:
