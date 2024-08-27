@@ -1,4 +1,4 @@
-# AI Research Assistant
+# AI-Powered Research
 ![](https://media.beehiiv.com/cdn-cgi/image/fit=scale-down,format=auto,onerror=redirect,quality=80/uploads/asset/file/90b64e83-4302-4b6d-9f79-63c40851dc3b/image.png?t=1717410721)
 
 ## **Bias and the Illusion of Intelligence: A Closer Look at AI**
@@ -7,7 +7,7 @@ As AI systems grow more sophisticated, their perceived intelligence often hinges
 
 Consider, for example, an AI agent designed to recommend job candidates. If the training data used to develop this agent is predominantly composed of resumes from individuals from a specific demographic, the agent may inadvertently perpetuate existing biases by consistently recommending candidates from that same demographic, even if they are not the most qualified for the position. This bias-induced limitation can create the illusion of intelligence, as the agent may appear to be making objective and fair recommendations when, in reality, it is simply reproducing the biases present in its training data.
 
-## AI Research Assistant - Evaluating Company Potential
+## AI Agent - Evaluating Company Potential
 
 ![output](output.png)
 
@@ -139,6 +139,42 @@ The application requires the following environment variables:
 - `OPENAI_AZURE_ENDPOINT`: The endpoint for the Azure OpenAI API.
 - `OPENAI_AZURE_API_KEY`: The API key for the Azure OpenAI API.
 
+## Search Tool
+
+```python
+class WebSearch(BaseTool):
+    name: str = "Web Search"  # Add type annotation for 'name'
+    description: str = "Searches the web for relevant content."
+    def _run(self, query: str) -> str:
+        query = query + " 2024 company video site:youtube.com AND inlang:en AND inurl:youtube AND inurl:v="
+        results = DDGS().text(str(query),region="us-en", max_results=1)
+        VIDEO_IDS = []
+        video_transcript_text = ""
+        for result in results:
+            VIDEO_IDS.append(result["href"])
+            video_transcript_text = get_transcript(extract_youtube_id_from_href(result["href"]))
+        print(VIDEO_IDS)
+        messages = [
+            (
+                "system",
+                "You are a helpful assistant that summarizes video transcripts into detailed markdown with key facts in list format.",
+            ),
+            ("human", "What are some key facts about the following content:\n\n" + video_transcript_text),
+            ("human", f"""
+             [response format]
+                - MUST BE VALID MARKDOWN LIST FORMAT
+                - MUST BE VALID MARKDOWN STRING
+             [end response format]
+
+             FOCUS ON {query}
+             """),
+        ]
+        ai_msg = default_llm.invoke(messages)
+        return f"Search results for: {query}: \n\n\"{ai_msg.content.strip()}\":"
+    
+search_tool = WebSearch()
+```
+
 ## Crew Code
 
 ```python
@@ -150,33 +186,124 @@ class CustomCrew:
        # Define agent with a more specific role and backstory
         custom_agent_1 = Agent(
             role="Partner Compatibility Analyst",
-            backstory="I am an expert in assessing the suitability of potential business partners. I have a deep understanding of industry trends, financial analysis, and partnership dynamics.",
-            goal=f"Using the snippets provided from your web search tool, generate an HTML report on {self.company_name} for potential partnership opportunities with {target}, focusing on financial stability, industry reputation, and alignment with strategic goals.",
+            backstory="I am an expert in assessing the suitability of potential business partners.",
+            goal=f"Research the {self.company_name}, its products, and its latest news to determine compatibility as PARTNER.",
             tools=[search_tool],
             allow_delegation=False,
             verbose=True,
             llm=default_llm,
             memory=True, # Enable memory
-            max_iter=50, # Default value for maximum iterations
+            cache=True, # Enable cache
         )
+
+        # Generate a more relevant search query using keyword extraction or semantic search
+
         custom_task_1 = Task(
             description=dedent(
-                f"""
-                Perform a 3-5 web searches using your web search tool to analyze {self.company_name}:                
-                    Use your tools and provide a recommendation on partner compatibility.
-                    Answer to the best of your ability.
-                    IMPORTANT! Your output should follow the provided template.
-                    Be concise in your recommendation.
-                    MAX RESPONSE LENGTH IS 500 CHARACTERS.
-                    IMPORTANT! PERFORM AT LEAST 3-5 WEB SEARCHES.
-                    MAX. 5 WEB SEARCHES.
-                    CREATE AN HTML STRING USING THE PROVIDED TEMPLATE! IMPORTANT!
-                    THINK CRITICALLY AND STEP BY STEP!
-
-            """+"\n\n[additional context]"+target_context+"\n\n[end additional context]"
+                "\n\n[additional context]"+target_context+"\n\n[end additional context]"+"\n\n"+
+                f"""          
+[task]
+    Use the research on your web search to create a concise HTML report with structured data and a clear recommendation.
+    Search the web researching {self.company_name}, and generate a concise HTML response. 
+    Do your best to generate a response with your web research without overusing your tools [IMPORTANT]
+    Your recommendation from be from the perspective of {self.company_name}.
+[IMPORTANT]
+- KEEP YOUR RESPONSE TO 600 CHARACTERS! IMPORTANT!
+- ALWAYS TRY TO ANSWER THE QUESTION IN A CLEAR AND CONCISE MANNER.
+- BE CONSERVATIVE WITH YOUR TOOL USE. DO NOT OVERUSE IT. 
+- CHOOSE FROM THESE QUERIES TO USE FOR YOUR SEARCH TOOL:
+    - {self.company_name} + company recent news
+    - {self.company_name} + company partnership partner
+- IMPORTANT! AFTER A FEW SEARCHES, ATTEMPT TO RESPOND TO THE BEST OF YOUR ABILITY. DO NOT OVERUSE YOUR TOOLS!
+    
+"""
             ),
             agent=custom_agent_1,
-            expected_output=""" <expected-output> """,
+            expected_output="""
+concise HTML report with structured data and a clear recommendation. 
+The HTML string will be injected into a `<div>`       
+
+IMPORTANT! FOLLOW THE TEMPLATE STRUCTURE BELOW:
+[template]
+<h2>{self.company_name} - {target} [🔴 | 🟡 | 🟢]</h2>
+<p>...</p>
+<table>
+<tbody>
+    <tr>
+    <th>Reputation</th>
+    </tr>
+    <tr>
+    <td>Industry Reputation</td>
+    <td>[🔴 | 🟡 | 🟢] ...</td>
+    </tr>
+    <tr>
+    <td>Financial Stability</td>
+    <td>[🔴 | 🟡 | 🟢] ...</td>
+    </tr>
+    <tr>
+    <td>Compliance</td>
+    <td>[🔴 | 🟡 | 🟢] ...</td>
+    </tr>
+    <tr>
+    <th colspan="2">Goals</th>
+    </tr>
+    <tr>
+    <td>Strategic Goals</td>
+    <td>[🔴 | 🟡 | 🟢] ...</td>
+    </tr>
+    <tr>
+    <td>Innovation</td>
+    <td>[🔴 | 🟡 | 🟢] ...</td>
+    </tr>
+</tbody>
+</table>
+[end template]
+
+[response criteria]
+- HTML Structure must match the template! IMPORTANT!
+- MUST BE RAW HTML STRING! IMPORTANT!
+- USE EMOJIS! For High, Medium, and Low, use emojis not words.
+- High = 🔴, Medium = 🟡, Low = 🟢. DO NOT USE WORDS!
+- YOUR HTML MUST USE BOOTSTRAP CSS.
+- MAX RESPONSE LENGTH = 600 CHARACTERS.
+- DO NOT INCLUDE <html> or <body> or things like that, just the raw HTML string that can be injected into a <div>
+[end response criteria]
+
+[example response for company `ORACLE`]
+<h2>ORACLE - {target} [🔴]</h2>
+<p>Oracle is a global provider of database technology and enterprise resource planning software. The company has demonstrated financial stability, solid revenue streams, and profitability. However, it's market leadership in the cloud and license segment does not align with our strategic goals and objectives.</p>
+<table class="table table-striped">
+<tbody>
+    <tr>
+    <th>Reputation</th>
+    </tr>
+    <tr>
+    <td>Industry Reputation</td>
+    <td>🟡</td>
+    </tr>
+    <tr>
+    <td>Financial Stability</td>
+    <td>🟢</td>
+    </tr>
+    <tr>
+    <td>Compliance</td>
+    <td>🟡</td>
+    </tr>
+    <tr>
+    <th colspan="2">Goals</th>
+    </tr>
+    <tr>
+    <td>Strategic Goals</td>
+    <td>🔴</td>
+    </tr>
+    <tr>
+    <td>Innovation</td>
+    <td>🟡</td>
+    </tr>
+</tbody>
+</table>
+[end example response]
+            """,
         )
 
 
@@ -189,26 +316,6 @@ class CustomCrew:
 
         # Run the crew and format output for HTML
         result = crew.kickoff()
-
-        # Extract relevant information from CrewAI output (modify as needed)
-        html_output = result  # Assuming findings are in the first agent's output
-
-        return html_output
-
-
-@app.route('/demo', methods=['GET', 'POST'])
-def test_endpoint():
-    user_input = ''
-    ai_response = ''
-    if request.method == 'POST':
-        if 'reset' in request.form:
-            session['reset'] = True
-            return redirect(url_for('test_endpoint'))
-        else:
-            user_input = request.form.get('user-input')
-            custom_crew = CustomCrew(user_input)
-            result = custom_crew.run()
-            
 ```
 
 ## Usage
