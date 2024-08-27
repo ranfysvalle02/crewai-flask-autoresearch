@@ -7,6 +7,32 @@ As AI systems grow more sophisticated, their perceived intelligence often hinges
 
 Consider, for example, an AI agent designed to recommend job candidates. If the training data used to develop this agent is predominantly composed of resumes from individuals from a specific demographic, the agent may inadvertently perpetuate existing biases by consistently recommending candidates from that same demographic, even if they are not the most qualified for the position. This bias-induced limitation can create the illusion of intelligence, as the agent may appear to be making objective and fair recommendations when, in reality, it is simply reproducing the biases present in its training data.
 
+## AI Research Assistant - Evaluating Company Potential
+
+![output](output.png]
+
+**Key Features**
+
+* **Automated Company Search:** Effortlessly find company information across the web.
+* **YouTube Transcript Summarization:** Extract key points from relevant YouTube videos, saving you valuable time.
+* **HTML Report Generation:** Receive a visually appealing report summarizing the company's suitability for partnership.
+* **Standalone Flask App:** Enjoy a user-friendly interface for seamless interaction on any device.
+
+**Benefits:**
+
+* **Effortless Research:** Automate tedious tasks and focus on strategic planning.
+* **Data-Driven Insights:** Gain valuable insights from AI-powered analysis.
+* **Increased Efficiency:** Streamline your research process and improve decision-making.
+* **Scalability:** Handle complex research requests with ease.
+
+**Live Demo**
+
+1. **Run the App:** Open a terminal and execute `python app.py`.
+2. **Visit the Demo Page:** Navigate to `http://localhost:8080/demo` in your web browser.
+3. **Enter Company Name:** Provide the name of the company you'd like to research.
+4. **Start Research:** Click the "Start Research" button.
+5. **Unveil Insights:** The application will gather information and present a comprehensive HTML report outlining the company's potential for partnership.
+
 ## The Unpredictable Mind of AI Agents
 
 One of the most significant challenges in LLM-powered agents is the unpredictability of their planning processes. While these agents can generate impressive outputs, their internal reasoning is often opaque, making it difficult to understand how they arrived at their conclusions. This lack of transparency makes it challenging to understand and control the agent's behavior.
