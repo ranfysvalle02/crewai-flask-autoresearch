@@ -7,11 +7,10 @@ from crewai import Crew, Task, Agent
 from crewai_tools import BaseTool
 from duckduckgo_search import DDGS
 from youtube_transcript_api import YouTubeTranscriptApi
-
 # Azure OpenAI configuration
 azure_openai_endpoint = os.getenv('OPENAI_AZURE_ENDPOINT', "")
-azure_openai_api_key = os.getenv('OPENAI_API_KEY', '')
-azure_openai_deployment_id = os.getenv('OPENAI_MODEL_NAME','gpt-35-turbo')
+azure_openai_api_key = os.getenv('OPENAI_AZURE_API_KEY', '')
+azure_openai_deployment_id = 'gpt-35-turbo'
 
 default_llm = AzureChatOpenAI(
     openai_api_version="2023-07-01-preview",
@@ -43,9 +42,9 @@ def get_transcript(video_id):
     return None
 class WebSearch(BaseTool):
     name: str = "Web Search"  # Add type annotation for 'name'
-    description: str = "Searches YouTube for critical. Use YouTube search best practices."
+    description: str = "Searches the web for relevant content."
     def _run(self, query: str) -> str:
-        query = query + " site:youtube.com"
+        query = query + " 2024 company video site:youtube.com AND inlang:en AND inurl:youtube AND inurl:v="
         results = DDGS().text(str(query),region="us-en", max_results=1)
         VIDEO_IDS = []
         video_transcript_text = ""
@@ -59,11 +58,13 @@ class WebSearch(BaseTool):
                 "You are a helpful assistant that summarizes video transcripts into detailed markdown with key facts in list format.",
             ),
             ("human", "What are some key facts about the following content:\n\n" + video_transcript_text),
-            ("human", """
+            ("human", f"""
              [response format]
                 - MUST BE VALID MARKDOWN LIST FORMAT
                 - MUST BE VALID MARKDOWN STRING
              [end response format]
+
+             FOCUS ON {query}
              """),
         ]
         ai_msg = default_llm.invoke(messages)
@@ -73,6 +74,14 @@ search_tool = WebSearch()
 # target to compare user input to
 target = "MongoDB"
 target_context = """
+## MongoDB Partner Ecosystem
+
+**Who are they?**
+
+* **Technology Partners:** Provide complementary products and services that integrate with MongoDB.
+* **Consulting Partners:** Offer professional services like implementation, migration, and optimization.
+* **Cloud Partners:** Provide MongoDB Atlas as a managed service on their cloud platforms.
+
 ## MongoDB Mission and Unique Differentiators
 MongoDB is built on a scale-out architecture that has become popular with developers of all kinds for developing scalable applications with evolving data schemas. 
 As a document database, MongoDB makes it easy for developers to store structured or unstructured data. It uses a JSON-like format to store documents.
@@ -110,7 +119,7 @@ class CustomCrew:
             verbose=True,
             llm=default_llm,
             memory=True, # Enable memory
-            cache=True
+            cache=True, # Enable cache
         )
 
         # Generate a more relevant search query using keyword extraction or semantic search
@@ -121,15 +130,18 @@ class CustomCrew:
                 f"""          
 [task]
     Use the research on your web search to create a concise HTML report with structured data and a clear recommendation.
-    Search the web researching {self.company_name}, and generate a concise HTML response.
-    
+    Search the web researching {self.company_name}, and generate a concise HTML response. 
+    Do your best to generate a response with your web research without overusing your tools [IMPORTANT]
+    Your recommendation from be from the perspective of {self.company_name}.
 [IMPORTANT]
-- ALWAYS TRY TO ANSWER THE QUESTION IN A CLEAR AND CONCISE MANNER.
-- Each search query must be semantically diverse yet effective.
 - KEEP YOUR RESPONSE TO 600 CHARACTERS! IMPORTANT!
 - ALWAYS TRY TO ANSWER THE QUESTION IN A CLEAR AND CONCISE MANNER.
-- DO NOT OVERUSE YOUR TOOLS! MAX TOOL USE = 5. MIN TOOL USE = 3.
-- EVERY SEARCH MUST BE DIVERSE AND SEMANTICALLY DIFFERENT TO ADD MAXIMUM VALUE TO THE CONTEXT!
+- BE CONSERVATIVE WITH YOUR TOOL USE. DO NOT OVERUSE IT. 
+- CHOOSE FROM THESE QUERIES TO USE FOR YOUR SEARCH TOOL:
+    - {self.company_name} + company recent news
+    - {self.company_name} + company partnership partner
+- IMPORTANT! AFTER A FEW SEARCHES, ATTEMPT TO RESPOND TO THE BEST OF YOUR ABILITY. DO NOT OVERUSE YOUR TOOLS!
+    
 """
             ),
             agent=custom_agent_1,
@@ -232,7 +244,7 @@ IMPORTANT! FOLLOW THE TEMPLATE STRUCTURE BELOW:
         result = crew.kickoff()
         # Extract relevant information from CrewAI output (modify as needed)
         html_output = result  # Assuming findings are in the first agent's output
-        html_output += "\n"+"<hr />"+"<code>" + str(crew.usage_metrics) + "</code>"
+        html_output += "\n"+"<hr />"+"<code>" + json.dumps(crew.usage_metrics) + "</code>"
         return html_output
 
 
