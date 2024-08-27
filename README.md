@@ -68,11 +68,6 @@ An LLM (Large Language Model) can encounter several challenges when filling out 
   * **Association Bias:** When the model associates certain attributes with negative or positive outcomes.
   * **Confirmation Bias:** When the model reinforces existing beliefs or stereotypes.
 
-* **Impact:**
-  * **Reinforcing harmful stereotypes**
-  * **Discriminating against certain groups**
-  * **Eroding trust in AI systems**
-
 ### **Explainability Techniques for LLMs**
 
 * **Attention Visualization:** Visualize the attention weights assigned to different parts of the input, revealing which parts of the text are most influential in the model's output.
