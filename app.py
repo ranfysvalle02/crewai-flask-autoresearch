@@ -248,7 +248,7 @@ IMPORTANT! FOLLOW THE TEMPLATE STRUCTURE BELOW:
         return html_output
 
 
-@app.route('/innovapi/demo', methods=['GET', 'POST'])
+@app.route('/demo', methods=['GET', 'POST'])
 def test_endpoint():
     user_input = ''
     ai_response = ''
