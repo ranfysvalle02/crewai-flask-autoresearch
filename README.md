@@ -50,7 +50,7 @@ An LLM (Large Language Model) can encounter several challenges when filling out 
 * **Data Limitations:** If the LLM doesn't have access to sufficient or relevant data, it might struggle to provide accurate ratings.
 
 
-## Installation
+## Getting Started
 
 1. Clone the repository.
 2. Install the required packages using pip
