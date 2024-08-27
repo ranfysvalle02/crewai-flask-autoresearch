@@ -8,7 +8,6 @@ from crewai import Crew, Task, Agent
 from langchain_community.tools import DuckDuckGoSearchResults
 
 search_tool = DuckDuckGoSearchResults()
-
 # target to compare user input to
 target = "MongoDB"
 target_context = """
@@ -34,15 +33,16 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'  # Replace with your secret key
 
 # Azure OpenAI configuration
-azure_openai_endpoint = os.getenv('OPENAI_AZURE_ENDPOINT', "")
-azure_openai_api_key = os.getenv('OPENAI_API_KEY', '')
-azure_openai_deployment_id = 'gpt4o'
+azure_openai_endpoint = os.getenv('NOSTRA_OPENAI_AZURE_ENDPOINT', "")
+azure_openai_api_key = os.getenv('NOSTRA_OPENAI_API_KEY', '')
+azure_openai_deployment_id = os.getenv('OPENAI_MODEL_NAME','gpt-4')
 
 default_llm = AzureChatOpenAI(
     openai_api_version="2023-07-01-preview",
     azure_deployment=azure_openai_deployment_id,
     azure_endpoint=azure_openai_endpoint,
-    api_key=azure_openai_api_key
+    api_key=azure_openai_api_key,
+    model_name=azure_openai_deployment_id
 )
 
 
@@ -185,7 +185,7 @@ The HTML string will be injected into a `<div>`
         return html_output
 
 
-@app.route('/demo', methods=['GET', 'POST'])
+@app.route('/innovapi/demo', methods=['GET', 'POST'])
 def test_endpoint():
     user_input = ''
     ai_response = ''
@@ -353,4 +353,4 @@ def test_endpoint():
     ''', user_input=user_input, ai_response=ai_response, reset=session.get('reset', True))
 
 if __name__ == '__main__':
-    app.run( host='0.0.0.0', port=5000, debug=True)
+    app.run( host='0.0.0.0', port=8080, debug=True)
