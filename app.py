@@ -196,7 +196,6 @@ def test_endpoint():
         else:
             user_input = request.form.get('user-input')
 
-            ai_response = "coming soon"
             custom_crew = CustomCrew(user_input)
             result = custom_crew.run()
             print("\n\n########################")
