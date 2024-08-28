@@ -244,7 +244,7 @@ IMPORTANT! FOLLOW THE TEMPLATE STRUCTURE BELOW:
         result = crew.kickoff()
         # Extract relevant information from CrewAI output (modify as needed)
         html_output = result  # Assuming findings are in the first agent's output
-        html_output += "\n"+"<hr />"+"<code>" + json.dumps(crew.usage_metrics) + "</code>"
+        html_output += "\n"+"<hr />"+"<code>" + str(crew.usage_metrics) + "</code>"
         return html_output
 
 
